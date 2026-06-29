@@ -1,14 +1,14 @@
 /**
  * 黄斌工作室 - 全局脚本
- * 功能：导航栏滚动效果、移动端菜单、高亮当前页面、滚动动画
+ * 功能：导航栏滚动效果、移动端菜单、高亮当前页面、滚动渐显动画（错峰延迟）
  */
 (function () {
   'use strict';
 
   /* ===== 导航栏滚动阴影 ===== */
-  const navbar = document.querySelector('.navbar');
+  var navbar = document.querySelector('.navbar');
   if (navbar) {
-    const onScroll = function () {
+    var onScroll = function () {
       if (window.scrollY > 20) {
         navbar.classList.add('scrolled');
       } else {
@@ -16,18 +16,17 @@
       }
     };
     window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll(); // 初始检查
+    onScroll();
   }
 
   /* ===== 移动端菜单 ===== */
-  const navToggle = document.querySelector('.nav-toggle');
-  const navMobile = document.querySelector('.nav-mobile');
+  var navToggle = document.querySelector('.nav-toggle');
+  var navMobile = document.querySelector('.nav-mobile');
   if (navToggle && navMobile) {
     navToggle.addEventListener('click', function () {
-      const isOpen = navMobile.classList.toggle('open');
+      var isOpen = navMobile.classList.toggle('open');
       navToggle.setAttribute('aria-expanded', isOpen);
     });
-    // 点击菜单链接后自动关闭
     navMobile.querySelectorAll('a').forEach(function (link) {
       link.addEventListener('click', function () {
         navMobile.classList.remove('open');
@@ -36,7 +35,7 @@
     });
   }
 
-  /* ===== 高亮当前页面对应的导航链接 ===== */
+  /* ===== 高亮当前导航链接 ===== */
   (function () {
     var path = window.location.pathname;
     var page = path.substring(path.lastIndexOf('/') + 1) || 'index.html';
@@ -49,18 +48,34 @@
     });
   })();
 
-  /* ===== 滚动渐显动画 ===== */
-  var observerOptions = { threshold: 0.15, rootMargin: '0px 0px -40px 0px' };
+  /* ===== 滚动渐显动画（错峰延迟） ===== */
+  var observerOptions = {
+    threshold: 0.12,
+    rootMargin: '0px 0px -60px 0px',
+  };
+
   var observer = new IntersectionObserver(function (entries) {
     entries.forEach(function (entry) {
       if (entry.isIntersecting) {
-        entry.target.classList.add('fade-in');
-        observer.unobserve(entry.target);
+        // 读取元素上的 data-delay 属性（毫秒），默认 0
+        var delay = parseInt(entry.target.getAttribute('data-delay')) || 0;
+        var el = entry.target;
+
+        setTimeout(function () {
+          el.classList.add('visible');
+        }, delay);
+
+        observer.unobserve(el);
       }
     });
   }, observerOptions);
 
-  document.querySelectorAll('.animate-on-scroll').forEach(function (el) {
+  // 观察所有带 animate-on-scroll 的元素
+  document.querySelectorAll('.animate-on-scroll').forEach(function (el, index) {
+    // 如果元素没有显式设置 data-delay，按顺序自动错峰
+    if (!el.hasAttribute('data-delay')) {
+      el.setAttribute('data-delay', index * 100);
+    }
     observer.observe(el);
   });
 })();
