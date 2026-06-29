@@ -1163,14 +1163,16 @@ ul, ol { list-style: none; }
 .contact-brand-name { font-size: 22px; font-weight: 700; color: var(--accent-light); }
 .contact-brand-sub { font-size: 12px; color: var(--gray-400); margin-top: 4px; }
 
-/* ===== 淡入动画 ===== */
-.fade-in {
+/* ===== 滚动渐显动画 ===== */
+.animate-on-scroll {
   opacity: 0;
-  transform: translateY(16px);
-  animation: fadeInUp 0.6s ease-out forwards;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(0.22, 0.61, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
-@keyframes fadeInUp {
-  to { opacity: 1; transform: translateY(0); }
+.animate-on-scroll.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ===== 页面对比图 hover zoom ===== */
