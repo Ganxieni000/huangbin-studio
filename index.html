@@ -8,6 +8,11 @@
   <title>黄斌工作室 | 结构安全评估与健康监测</title>
   <link rel="icon" type="image/svg+xml" href="public/favicon.svg" />
   <link rel="stylesheet" href="css/styles.css" />
+  <!-- 动画关键样式内联（不受外部CSS缓存影响） -->
+  <style>
+    .animate-on-scroll{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.22,.61,.36,1),transform .7s cubic-bezier(.22,.61,.36,1)}
+    .animate-on-scroll.visible{opacity:1;transform:translateY(0)}
+  </style>
 </head>
 <body>
 
@@ -309,6 +314,62 @@
     </div>
   </footer>
 
-  <script src="js/main.js"></script>
+  <!-- ==================== 内联脚本：导航 + 滚动动画 ==================== -->
+  <script>
+  (function(){
+    'use strict';
+
+    /* 导航栏滚动阴影 */
+    var nav=document.querySelector('.navbar');
+    if(nav){
+      var onScroll=function(){ nav.classList.toggle('scrolled',window.scrollY>20); };
+      window.addEventListener('scroll',onScroll,{passive:true});
+      onScroll();
+    }
+
+    /* 移动端菜单 */
+    var btn=document.querySelector('.nav-toggle');
+    var menu=document.querySelector('.nav-mobile');
+    if(btn&&menu){
+      btn.addEventListener('click',function(){
+        var open=menu.classList.toggle('open');
+        btn.setAttribute('aria-expanded',open);
+      });
+      menu.querySelectorAll('a').forEach(function(a){
+        a.addEventListener('click',function(){menu.classList.remove('open');btn.setAttribute('aria-expanded','false');});
+      });
+    }
+
+    /* 高亮当前导航 */
+    (function(){
+      var p=window.location.pathname;
+      var page=p.substring(p.lastIndexOf('/')+1)||'index.html';
+      document.querySelectorAll('.nav-links a, .nav-mobile a').forEach(function(a){
+        var h=a.getAttribute('href');
+        if(h===page||(page==='index.html'&&(h==='./'||h==='/'||h==='index.html')))a.classList.add('active');
+      });
+    })();
+
+    /* 滚动渐显动画 — 核心 */
+    var els=document.querySelectorAll('.animate-on-scroll');
+    if(els.length){
+      var obs=new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+          if(e.isIntersecting){
+            setTimeout(function(){
+              e.target.classList.add('visible');
+            },parseInt(e.target.getAttribute('data-delay'))||0);
+            obs.unobserve(e.target);
+          }
+        });
+      },{threshold:0.1,rootMargin:'0px 0px -50px 0px'});
+
+      els.forEach(function(el,i){
+        if(!el.hasAttribute('data-delay'))el.setAttribute('data-delay',i*100);
+        obs.observe(el);
+      });
+    }
+  })();
+  </script>
 </body>
 </html>
